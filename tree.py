@@ -1,9 +1,10 @@
 import csv
-from sympy import Segment, Point, Polygon, intersection
 from itertools import combinations
 
+import sympy
 
-def parse_data(filename):
+
+def parse_data(filename: str):
     """
     Parses the given csv file so the data is more easily accessible later on.
 
@@ -26,7 +27,7 @@ def parse_data(filename):
     return nodes
 
 
-def find_valid_connections(nodes, margin):
+def find_valid_connections(nodes: dict, margin: float):
     """
     Finds all connections between any two nodes in the given data that don't intersect the polygon bounded by the
     vertices labelled 'obstacle'.
@@ -40,10 +41,10 @@ def find_valid_connections(nodes, margin):
 
     # list of (x,y) of obstacle bounds
     restricted_vertices = [(node[0], node[1]) for node in nodes.values() if node[2] == 'obstacle']
-    restricted_region = Polygon(*restricted_vertices)
+    restricted_region = sympy.Polygon(*restricted_vertices)
 
     # list of (x,y) of all points
-    waypoints = [Point((node[0], node[1])) for node in nodes.values() if node[2] != 'obstacle']
+    waypoints = [sympy.Point((node[0], node[1])) for node in nodes.values() if node[2] != 'obstacle']
 
     # TODO: find a way to scale the region so there is a path possible between those nodes
     safe_region = restricted_region.scale(margin, margin)
@@ -55,7 +56,7 @@ def find_valid_connections(nodes, margin):
     valid_connections = []
 
     for combo in combos:
-        intersect = intersection(Segment(*combo), restricted_region)
+        intersect = sympy.intersection(sympy.Segment(*combo), restricted_region)
         if len(intersect) == 1 and intersect[0] == combo[1]:
             valid_connections.append([i.args for i in combo])
 
