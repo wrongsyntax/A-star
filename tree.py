@@ -1,7 +1,7 @@
 import csv
 from itertools import combinations
 
-import sympy
+import sympy as sp
 
 
 def parse_data(filename: str):
@@ -41,12 +41,18 @@ def find_valid_connections(nodes: dict, margin: float):
 
     # list of (x,y) of obstacle bounds
     restricted_vertices = [(node[0], node[1]) for node in nodes.values() if node[2] == 'obstacle']
-    restricted_region = sympy.Polygon(*restricted_vertices)
+    restricted_region = sp.Polygon(*restricted_vertices)
 
-    # list of (x,y) of all points
-    waypoints = [sympy.Point((node[0], node[1])) for node in nodes.values() if node[2] != 'obstacle']
+    # list of (x,y) of START and TARGET
+    waypoints = [sp.Point((node[0], node[1])) for node in nodes.values() if node[2] != 'obstacle']
 
     safe_region = restricted_region.scale(margin, margin, restricted_region.centroid)
+    # ensure the safe_region is not so large that START or TARGET are inside
+    # TODO: This is not working yet
+    if safe_region.encloses_point(waypoints[0]) or safe_region.encloses_point(waypoints[1]):
+        return "!! Margin factor too large."
+
+    # extend waypoints to also include safe vertices
     waypoints.extend(safe_region.vertices)
 
     # gives a list of all possible combinations of points
@@ -55,7 +61,7 @@ def find_valid_connections(nodes: dict, margin: float):
     valid_connections = []
 
     for combo in combos:
-        intersect = sympy.intersection(sympy.Segment(*combo), restricted_region)
+        intersect = sp.intersection(sp.Segment(*combo), restricted_region)
         if not intersect:
             valid_connections.append([i.args for i in combo])
 
@@ -65,3 +71,4 @@ def find_valid_connections(nodes: dict, margin: float):
 if __name__ == "__main__":
     parsed_nodes = parse_data("data.csv")
     print(find_valid_connections(parsed_nodes, 1.3))
+    # print(find_valid_connections(parsed_nodes, 100))
