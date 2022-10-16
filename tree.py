@@ -1,14 +1,15 @@
 import csv
+from sympy import Segment, Point, Polygon, intersection
+from itertools import combinations
 
 
 def parse_data(filename):
     """
     Parses the given csv file so the data is more easily accessible later on.
 
-    :param filename: input .csv file with the header "waypoint_name, x_position, y_position, type"
-    :return: a dictionary that stores each 'waypoint_name' as the key and a tuple (x_pos: int, y_pos: int,
-    classification: string)
-    as the value
+    :param filename: Input .csv file with the header "waypoint_name, x_position, y_position, type".
+    :return: A dictionary that stores each 'waypoint_name' as the key and a tuple (x_pos: int, y_pos: int,
+        classification: string) as the value.
     """
 
     nodes = {}
@@ -25,6 +26,42 @@ def parse_data(filename):
     return nodes
 
 
+def find_valid_connections(nodes, margin):
+    """
+    Finds all connections between any two nodes in the given data that don't intersect the polygon bounded by the
+    vertices labelled 'obstacle'.
+
+    :param margin: Amount to scale the restricted region by to provide a safety margin so the drone doesn't
+        accidentally enter the restricted region.
+    :param nodes: Dictionary of parsed nodes from parse_data().
+    :return: A list containing every two points that can be connected without intersecting the restricted region. Each
+        pair of points is a list of two tuples representing (x, y).
+    """
+
+    # list of (x,y) of obstacle bounds
+    restricted_vertices = [(node[0], node[1]) for node in nodes.values() if node[2] == 'obstacle']
+    restricted_region = Polygon(*restricted_vertices)
+
+    # list of (x,y) of all points
+    waypoints = [Point((node[0], node[1])) for node in nodes.values() if node[2] != 'obstacle']
+
+    # TODO: find a way to scale the region so there is a path possible between those nodes
+    safe_region = restricted_region.scale(margin, margin)
+    waypoints.extend(safe_region.vertices)
+
+    # gives a list of all possible combinations of points
+    combos = list(combinations(waypoints, 2))
+
+    valid_connections = []
+
+    for combo in combos:
+        intersect = intersection(Segment(*combo), restricted_region)
+        if len(intersect) == 1 and intersect[0] == combo[1]:
+            valid_connections.append([i.args for i in combo])
+
+    return valid_connections
+
+
 if __name__ == "__main__":
-    parsed = parse_data("data.csv")
-    print(parsed)
+    parsed_nodes = parse_data("data.csv")
+    print(find_valid_connections(parsed_nodes, 1))
