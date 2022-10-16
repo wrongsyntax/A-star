@@ -46,8 +46,7 @@ def find_valid_connections(nodes: dict, margin: float):
     # list of (x,y) of all points
     waypoints = [sympy.Point((node[0], node[1])) for node in nodes.values() if node[2] != 'obstacle']
 
-    # TODO: find a way to scale the region so there is a path possible between those nodes
-    safe_region = restricted_region.scale(margin, margin)
+    safe_region = restricted_region.scale(margin, margin, restricted_region.centroid)
     waypoints.extend(safe_region.vertices)
 
     # gives a list of all possible combinations of points
@@ -57,7 +56,7 @@ def find_valid_connections(nodes: dict, margin: float):
 
     for combo in combos:
         intersect = sympy.intersection(sympy.Segment(*combo), restricted_region)
-        if len(intersect) == 1 and intersect[0] == combo[1]:
+        if not intersect:
             valid_connections.append([i.args for i in combo])
 
     return valid_connections
@@ -65,4 +64,4 @@ def find_valid_connections(nodes: dict, margin: float):
 
 if __name__ == "__main__":
     parsed_nodes = parse_data("data.csv")
-    print(find_valid_connections(parsed_nodes, 1))
+    print(find_valid_connections(parsed_nodes, 1.3))
