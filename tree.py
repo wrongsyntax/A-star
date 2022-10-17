@@ -27,14 +27,15 @@ def parse_data(filename: str):
     return nodes
 
 
-def find_valid_connections(nodes: dict, margin: float):
+def find_valid_connections(nodes: dict, margin: float = 1.3):
     """
     Finds all connections between any two nodes in the given data that don't intersect the polygon bounded by the
     vertices labelled 'obstacle'.
+    TODO: find a way to correlate the new safe waypoints with the original 'waypoint_name'
 
     :param margin: Amount to scale the restricted region by to provide a safety margin so the drone doesn't
         accidentally enter the restricted region.
-    :param nodes: Dictionary of parsed nodes from parse_data().
+    :param nodes: Dictionary of parsed nodes from parse_data(): {'waypoint_name': (x, y, classification)}
     :return: A list containing every two points that can be connected without intersecting the restricted region. Each
         pair of points is a list of two tuples representing (x, y).
     """
@@ -70,5 +71,5 @@ def find_valid_connections(nodes: dict, margin: float):
 
 if __name__ == "__main__":
     parsed_nodes = parse_data("data.csv")
-    print(find_valid_connections(parsed_nodes, 1.3))
+    print(find_valid_connections(parsed_nodes, margin=1.3))
     # print(find_valid_connections(parsed_nodes, 100))
