@@ -55,9 +55,10 @@ def create_safe_waypoints(nodes: dict, margin: float = 1.3):
     # TODO: Ensure safe_region does not enclose START and TARGET
 
     # extend waypoints to also include safe vertices
-    # IMPORTANT: this assumes that the order of points is maintained throughout this whole process
+    # IMPORTANT: this assumes that the order of points is maintained throughout this whole process.
+    #   Only tested for first two nodes being START and TARGET and rest being OBSTACLE
     i = 0
-    for name, data in nodes.items():
+    for name in nodes:
         if name not in safe_waypoints:
             safe_waypoints[name] = (safe_region.vertices[i].x, safe_region.vertices[i].y)
             i += 1
