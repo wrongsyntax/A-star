@@ -98,6 +98,9 @@ def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon):
     return valid_connections
 
 
+# TODO: generate the tree
+# TODO: find G_COSTs and H_COSTs
+
 if __name__ == "__main__":
     parsed_nodes = parse_data("data.csv")
     waypoints, nofly_region = create_safe_waypoints(parsed_nodes)
