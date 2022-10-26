@@ -65,6 +65,9 @@ def create_safe_waypoints(nodes: dict, margin: float = 1.3):
         else:
             pass
 
+    # Move the target to the end of the dictionary
+    safe_waypoints['T'] = safe_waypoints.pop('T')
+
     return safe_waypoints, restricted_region
 
 
@@ -76,7 +79,7 @@ def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon):
     :param restricted_region: The region bounded by the 'obstacle' waypoints that must be avoided
     :param safe_waypoints: A dictionary of waypoints and their names that has the safety margin applied
     :return: A list containing every two points that can be connected without intersecting the restricted region. Each
-        pair of points is a tuple containing the names of the first and second waypoint that can be connected.
+        pair of points is a tuple containing the names of the parent and child waypoint that can be connected.
     """
 
     # gives a list of all possible combinations of points
@@ -96,14 +99,41 @@ def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon):
             # append ('first', 'second') to valid_connections
             valid_connections.append((waypoint_names[first], waypoint_names[second]))
 
+    # IMPORTANT: The dictionary has it's values stored in the order that the tree should be in.
+    #           ie. S -> A -> B -> ... -> T
+    #       This needs to be done to preserve the order of the tuples in valid_connections so element 0 is the parent
+    #       node and element 1 is the child node. Since it is like this, it's easier to generate a tree.
+    # TODO: Find a better way to store valid connections so a tree can be generated in more generalized cases.
     return valid_connections
 
 
-# TODO: generate the tree
+# TODO: generate the tree [in progress]
+#   Will need to be redone once find_valid_connections() is updated.
+def generate_tree(connections):
+    """
+    Generate the final tree to be used by A*.
+
+    :param connections: Currently a list of tuples (parent, child).
+    :return: A dictionary containing each node and all nodes that can be reached through that node.
+    """
+
+    tree = {}
+
+    for pair in connections:
+        if pair[0] in tree:
+            tree[pair[0]].append(pair[1])
+        else:
+            tree[pair[0]] = list(pair[1])
+
+    return tree
+
+
 # TODO: find G_COSTs and H_COSTs
 
 if __name__ == "__main__":
     parsed_nodes = parse_data("data.csv")
     waypoints, nofly_region = create_safe_waypoints(parsed_nodes)
     connections = find_valid_connections(waypoints, nofly_region)
-    print(len(connections), connections)
+    print(f"{connections = }")
+    final_tree = generate_tree(connections)
+    print(f"{final_tree = }")
