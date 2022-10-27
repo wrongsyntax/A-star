@@ -41,7 +41,7 @@ def create_safe_waypoints(nodes: dict, margin: float = 1.3):
 
     # list of (x,y) of obstacle bounds
     restricted_vertices = [(node[0], node[1]) for node in nodes.values() if node[2] == 'obstacle']
-    restricted_region = sp.Polygon(*restricted_vertices)
+    restricted_region = sp.convex_hull(*restricted_vertices)
 
     safe_waypoints = dict()
     # list of (x,y) of START and TARGET
@@ -132,8 +132,11 @@ def generate_tree(connections):
 
 if __name__ == "__main__":
     parsed_nodes = parse_data("data.csv")
+
     waypoints, nofly_region = create_safe_waypoints(parsed_nodes)
+
     connections = find_valid_connections(waypoints, nofly_region)
     print(f"{connections = }")
+
     final_tree = generate_tree(connections)
     print(f"{final_tree = }")
