@@ -29,7 +29,7 @@ def parse_data(filename: str):
 
 def create_safe_waypoints(nodes: dict, margin: float = 1.3):
     """
-    Apply a safety margin to nodes so connections can be made without being on the border of the restricted region,
+    Apply a safety margin to nodes so connections_names can be made without being on the border of the restricted region,
     while preserving the name associated with each waypoint.
 
     :param nodes: A dictionary of nodes that has the form {'waypoint_name': (x, y, classification)}
@@ -73,7 +73,7 @@ def create_safe_waypoints(nodes: dict, margin: float = 1.3):
 
 def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon):
     """
-    Finds all connections between any two nodes in the given data that don't intersect the polygon bounded by the
+    Finds all connections_names between any two nodes in the given data that don't intersect the polygon bounded by the
     vertices labelled 'obstacle'.
 
     :param restricted_region: The region bounded by the 'obstacle' waypoints that must be avoided
@@ -85,47 +85,76 @@ def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon):
     # gives a list of all possible combinations of points
     combos = list(combinations(safe_waypoints.values(), 2))
 
-    valid_connections = []
+    valid_connections_names = []
+    valid_connections_coords = []
     waypoint_names = list(safe_waypoints.keys())
     waypoint_values = list(safe_waypoints.values())
 
     for combo in combos:
         intersect = sp.intersection(sp.Segment(*combo), restricted_region)
         if not intersect:
-            # find first waypoint name
             first = waypoint_values.index(combo[0])
-            # find second waypoint name
             second = waypoint_values.index(combo[1])
-            # append ('first', 'second') to valid_connections
-            valid_connections.append((waypoint_names[first], waypoint_names[second]))
+            # append ('first', 'second') to valid_connections_names
+            valid_connections_names.append((waypoint_names[first], waypoint_names[second]))
+
+            first = combo[0]
+            second = combo[1]
+            valid_connections_coords.append((first, second))
 
     # IMPORTANT: The dictionary has it's values stored in the order that the tree should be in.
     #           ie. S -> A -> B -> ... -> T
     #       This needs to be done to preserve the order of the tuples in valid_connections so element 0 is the parent
     #       node and element 1 is the child node. Since it is like this, it's easier to generate a tree.
     # TODO: Find a better way to store valid connections so a tree can be generated in more generalized cases.
-    return valid_connections
+    return valid_connections_names, valid_connections_coords
 
 
 # TODO: generate the tree [in progress]
 #   Will need to be redone once find_valid_connections() is updated.
-def generate_tree(connections):
+def generate_tree(connections_names, connections_coords):
     """
     Generate the final tree to be used by A*.
 
-    :param connections: Currently a list of tuples (parent, child).
+    :param connections_coords: A list of tuples with node coordinates
+    :param connections_names: Currently a list of tuples with node names (parent, child). Used for
+        debugging/visualization purposes.
     :return: A dictionary containing each node and all nodes that can be reached through that node.
     """
 
-    tree = {}
+    tree_names = {}
+    tree_coords = {}
 
-    for pair in connections:
-        if pair[0] in tree:
-            tree[pair[0]].append(pair[1])
+    # make tree using names
+    for pair in connections_names:
+        if pair[0] in tree_names:
+            if not pair[1] in tree_names[pair[0]]:
+                tree_names[pair[0]].append(pair[1])
         else:
-            tree[pair[0]] = list(pair[1])
+            # BUG: first coordinate not stored as a tuple, same for connections_coords
+            tree_names[pair[0]] = tuple(pair[1])
 
-    return tree
+        if pair[1] in tree_names:
+            if not pair[0] in tree_names[pair[1]]:
+                tree_names[pair[1]].append(pair[0])
+        else:
+            tree_names[pair[1]] = list(pair[0])
+
+    # make tree using coordinates
+    for pair in connections_coords:
+        if pair[0] in tree_coords:
+            if not pair[1] in tree_coords[pair[0]]:
+                tree_coords[pair[0]].append(pair[1])
+        else:
+            tree_coords[pair[0]] = list(pair[1])
+
+        if pair[1] in tree_coords:
+            if not pair[0] in tree_coords[pair[1]]:
+                tree_coords[pair[1]].append(pair[0])
+        else:
+            tree_coords[pair[1]] = list(pair[0])
+
+    return tree_names, tree_coords
 
 
 # TODO: find G_COSTs and H_COSTs
@@ -135,8 +164,8 @@ if __name__ == "__main__":
 
     waypoints, nofly_region = create_safe_waypoints(parsed_nodes)
 
-    connections = find_valid_connections(waypoints, nofly_region)
-    print(f"{connections = }")
+    connections, coords = find_valid_connections(waypoints, nofly_region)
+    # print(f"{connections = }\n{coords = }")
 
-    final_tree = generate_tree(connections)
-    print(f"{final_tree = }")
+    final_tree_names, final_tree_coords = generate_tree(connections, coords)
+    print(f"{final_tree_names = }\n{final_tree_coords = }")
