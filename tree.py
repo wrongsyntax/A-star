@@ -132,7 +132,7 @@ def generate_tree(connections_names, connections_coords):
                 tree_names[pair[0]].append(pair[1])
         else:
             # BUG: first coordinate not stored as a tuple, same for connections_coords
-            tree_names[pair[0]] = tuple(pair[1])
+            tree_names[pair[0]] = list(pair[1])
 
         if pair[1] in tree_names:
             if not pair[0] in tree_names[pair[1]]:
