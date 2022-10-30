@@ -61,8 +61,14 @@ def create_safe_waypoints(nodes: dict, margin: float = 1.3):
     i = 0  # FIXME: there must be a better way to do this
     for name in nodes:
         if name not in safe_waypoints:
-            safe_waypoints[name] = (safe_region.vertices[i].x, safe_region.vertices[i].y)
-            i += 1
+            try:
+                safe_waypoints[name] = (safe_region.vertices[i].x, safe_region.vertices[i].y)
+                i += 1
+            except IndexError:
+                # IMPORTANT: This is caused by the fact that the convex_hull ignores points that would make the polygon
+                #   be not convex at any point. This should be fine since having that point in the polygon would be
+                #   of no use since a path that goes there and then back to another point would not be optimal.
+                print("IndexError occurred while making safe_waypoints dict.")
         else:
             pass
 
