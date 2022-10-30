@@ -11,7 +11,7 @@ target_col = 'limegreen'
 
 # get all required data
 parsed_nodes = tree.parse_data("data.csv")
-waypoints, nofly_region = tree.create_safe_waypoints(parsed_nodes)
+waypoints, nofly_region, margin_region = tree.create_safe_waypoints(parsed_nodes)
 
 # original nodes
 points_x = [i[0] for i in parsed_nodes.values() if i[2] == 'obstacle']
@@ -48,7 +48,7 @@ for side in nofly_region.sides:
 # print(f"{nofly_sides_x = }\n{nofly_sides_y = }")
 
 # valid paths
-connections, coords = tree.find_valid_connections(waypoints, nofly_region)
+connections, coords = tree.find_valid_connections(waypoints, nofly_region, margin_region, intersect_safe=False)
 # print(f"{connections = }\n{coords = }")
 for c in coords:
     paths_x = []

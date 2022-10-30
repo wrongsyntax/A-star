@@ -75,14 +75,17 @@ def create_safe_waypoints(nodes: dict, margin: float = 1.3):
     # Move the target to the end of the dictionary
     safe_waypoints['T'] = safe_waypoints.pop('T')
 
-    return safe_waypoints, restricted_region
+    return safe_waypoints, restricted_region, safe_region
 
 
-def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon):
+def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon, safe_region: sp.Polygon,
+                           intersect_safe: bool = True):
     """
     Finds all connections_names between any two nodes in the given data that don't intersect the polygon bounded by the
     vertices labelled 'obstacle'.
 
+    :param intersect_safe: Whether to maintain safety margin on paths between nodes. True maintains margin.
+    :param safe_region: The safe region created by scaling the restricted region.
     :param restricted_region: The region bounded by the 'obstacle' waypoints that must be avoided
     :param safe_waypoints: A dictionary of waypoints and their names that has the safety margin applied
     :return: A list containing every two points that can be connected without intersecting the restricted region. Each
@@ -98,8 +101,9 @@ def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon):
     waypoint_values = list(safe_waypoints.values())
 
     for combo in combos:
-        intersect = sp.intersection(sp.Segment(*combo), restricted_region)
-        if not intersect:
+        intersect_inner = sp.intersection(sp.Segment(*combo), restricted_region)
+        intersect_outer = sp.intersection(sp.Segment(*combo), safe_region)
+        if (not intersect_inner and not (len(intersect_outer) > 1)) or (not intersect_inner and not intersect_safe):
             first = waypoint_values.index(combo[0])
             second = waypoint_values.index(combo[1])
             # append ('first', 'second') to valid_connections_names
@@ -163,9 +167,9 @@ def generate_tree(connections_names, connections_coords):
 if __name__ == "__main__":
     parsed_nodes = parse_data("data.csv")
 
-    waypoints, nofly_region = create_safe_waypoints(parsed_nodes)
+    waypoints, nofly_region, margin_region = create_safe_waypoints(parsed_nodes)
 
-    connections, coords = find_valid_connections(waypoints, nofly_region)
+    connections, coords = find_valid_connections(waypoints, nofly_region, margin_region)
     # print(f"{connections = }\n{coords = }")
 
     final_tree_names, final_tree_coords = generate_tree(connections, coords)
