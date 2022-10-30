@@ -102,16 +102,9 @@ def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon):
             second = combo[1]
             valid_connections_coords.append((first, second))
 
-    # IMPORTANT: The dictionary has it's values stored in the order that the tree should be in.
-    #           ie. S -> A -> B -> ... -> T
-    #       This needs to be done to preserve the order of the tuples in valid_connections so element 0 is the parent
-    #       node and element 1 is the child node. Since it is like this, it's easier to generate a tree.
-    # TODO: Find a better way to store valid connections so a tree can be generated in more generalized cases.
     return valid_connections_names, valid_connections_coords
 
 
-# TODO: generate the tree [in progress]
-#   Will need to be redone once find_valid_connections() is updated.
 def generate_tree(connections_names, connections_coords):
     """
     Generate the final tree to be used by A*.
@@ -119,7 +112,9 @@ def generate_tree(connections_names, connections_coords):
     :param connections_coords: A list of tuples with node coordinates
     :param connections_names: Currently a list of tuples with node names (parent, child). Used for
         debugging/visualization purposes.
-    :return: A dictionary containing each node and all nodes that can be reached through that node.
+    :return: A dictionary containing each node and all nodes that can be reached through that node. Returns two dicts,
+        one using node names for readability/debugging, and one using coordinates for later use.
+        Both dictionaries are undirected.
     """
 
     tree_names = {}
@@ -157,8 +152,6 @@ def generate_tree(connections_names, connections_coords):
 
     return tree_names, tree_coords
 
-
-# TODO: find G_COSTs and H_COSTs
 
 if __name__ == "__main__":
     parsed_nodes = parse_data("data.csv")
