@@ -9,7 +9,7 @@ def parse_data(filename: str):
     Parses the given csv file so the data is more easily accessible later on.
 
     :param filename: Input .csv file with the header "waypoint_name, x_position, y_position, type".
-    :return: A dictionary that stores each 'waypoint_name' as the key and a tuple (x_pos: int, y_pos: int,
+    :return: A dictionary that stores each 'waypoint_name' as the key and a tuple (x_pos: float, y_pos: float,
         classification: string) as the value.
     """
 
@@ -82,14 +82,16 @@ def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon, 
                            intersect_safe: bool = True):
     """
     Finds all connections_names between any two nodes in the given data that don't intersect the polygon bounded by the
-    vertices labelled 'obstacle'.
+    vertices labelled 'obstacle'. Also has the option to set `intersect_safe` to True, which will ensure that the paths
+    drawn between nodes always respect the safety_margin, so no path goes too close to the restricted_region.
 
     :param intersect_safe: Whether to maintain safety margin on paths between nodes. True maintains margin.
     :param safe_region: The safe region created by scaling the restricted region.
     :param restricted_region: The region bounded by the 'obstacle' waypoints that must be avoided
     :param safe_waypoints: A dictionary of waypoints and their names that has the safety margin applied
     :return: A list containing every two points that can be connected without intersecting the restricted region. Each
-        pair of points is a tuple containing the names of the parent and child waypoint that can be connected.
+        pair of points is a tuple containing the names of the parent and child waypoint that can be connected. Also
+        returns a version with just the coordinates for easier use later on.
     """
 
     # gives a list of all possible combinations of points
@@ -118,7 +120,7 @@ def find_valid_connections(safe_waypoints: dict, restricted_region: sp.Polygon, 
 
 def generate_tree(connections_names, connections_coords):
     """
-    Generate the final tree to be used by A*.
+    Generate the final tree to be used by the pathfinding algorithm.
 
     :param connections_coords: A list of tuples with node coordinates
     :param connections_names: Currently a list of tuples with node names (parent, child). Used for
