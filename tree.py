@@ -20,7 +20,8 @@ def parse_data(filename: str):
         next(data_reader, None)  # skip the headers
         for row in data_reader:
             try:
-                nodes[row[0]] = (int(row[1]), int(row[2]), row[3])  # nodes = {'waypoint_name': (x, y, classification)}
+                nodes[row[0]] = (
+                float(row[1]), float(row[2]), row[3])  # nodes = {'waypoint_name': (x, y, classification)}
             except ValueError:
                 print(f"ValueError occurred in parse_data for loop.")
 
