@@ -3,6 +3,11 @@ import matplotlib.pyplot as plt
 import tree
 
 
+# CHANGE THESE TO CHANGE PARAMETERS OF PLOT
+DATA_SOURCE = "data2.csv"
+INTERSECT_SAFE = True
+
+
 # color variables
 res_col = 'darkorange'
 waypoint_col = 'royalblue'
@@ -10,7 +15,7 @@ start_col = 'tomato'
 target_col = 'limegreen'
 
 # get all required data
-parsed_nodes = tree.parse_data("data.csv")
+parsed_nodes = tree.parse_data(DATA_SOURCE)
 waypoints, nofly_region, margin_region = tree.create_safe_waypoints(parsed_nodes)
 
 # original nodes
@@ -42,13 +47,14 @@ for side in nofly_region.sides:
     nofly_sides_x = []
     nofly_sides_y = []
     for point in side.points:
-        nofly_sides_x.append(int(point.x))
-        nofly_sides_y.append(int(point.y))
+        nofly_sides_x.append(point.x)
+        nofly_sides_y.append(point.y)
     plt.plot(nofly_sides_x, nofly_sides_y, res_col)
 # print(f"{nofly_sides_x = }\n{nofly_sides_y = }")
 
 # valid paths
-connections, coords = tree.find_valid_connections(waypoints, nofly_region, margin_region, intersect_safe=False)
+# Set intersect_safe to either True or False to see both options.
+connections, coords = tree.find_valid_connections(waypoints, nofly_region, margin_region, intersect_safe=INTERSECT_SAFE)
 # print(f"{connections = }\n{coords = }")
 for c in coords:
     paths_x = []
