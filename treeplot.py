@@ -7,7 +7,6 @@ import tree
 DATA_SOURCE = "data2.csv"
 INTERSECT_SAFE = True
 
-
 # color variables
 res_col = 'darkorange'
 waypoint_col = 'royalblue'
