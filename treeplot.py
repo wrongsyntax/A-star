@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 
 import tree
 
+import leastPath
 
 # CHANGE THESE TO CHANGE PARAMETERS OF PLOT
 DATA_SOURCE = "data2.csv"
@@ -55,6 +56,7 @@ for side in nofly_region.sides:
 # Set intersect_safe to either True or False to see both options.
 connections, coords = tree.find_valid_connections(waypoints, nofly_region, margin_region, intersect_safe=INTERSECT_SAFE)
 # print(f"{connections = }\n{coords = }")
+
 for c in coords:
     paths_x = []
     paths_y = []
@@ -64,7 +66,9 @@ for c in coords:
     paths_y.append(c[1][1])
     plt.plot(paths_x, paths_y, linestyle=':', color='gray')
 
-# plot
+# print(connections)
+# print(coords)
+leastPath.dijkstra(connections,coords)
 plt.plot(points_x, points_y, marker='o', mfc=res_col, mec=res_col, linestyle='None')
 plt.plot(start_x, start_y, marker='X', mfc=start_col, mec=start_col)
 plt.plot(target_x, target_y, marker='X', mfc=target_col, mec=target_col)
