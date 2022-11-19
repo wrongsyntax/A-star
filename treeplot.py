@@ -4,7 +4,7 @@ import tree
 
 
 # CHANGE THESE TO CHANGE PARAMETERS OF PLOT
-DATA_SOURCE = "data2.csv"
+DATA_SOURCE = "randomdata.csv"
 INTERSECT_SAFE = True
 
 # color variables

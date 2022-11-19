@@ -3,7 +3,7 @@ import numpy as np
 
 # PARAMETERS
 NUM_VERTICES = 10
-FILENAME = "data3"  # without .csv
+FILENAME = "randomdata"  # without .csv
 
 start = (0, 0)
 target = (20, 20)
